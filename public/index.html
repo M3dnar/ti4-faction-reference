@@ -451,6 +451,18 @@ a:hover { text-decoration: underline; }
 .rand-fname { font-size: .9rem; font-weight: 600; }
 .rand-fexp  { font-size: .7rem; color: var(--dim); margin-top: .1rem; }
 .rand-err   { color: #e67e22; font-size: .85rem; text-align: center; padding: .5rem 0; }
+
+/* ── Header download button ─────────────────────────────────────────────── */
+.btn-header-dl {
+  padding: .42rem 1.05rem; border-radius: 6px;
+  border: none; background: var(--gold);
+  color: var(--bg); cursor: pointer; font-size: .82rem;
+  font-weight: 700; transition: all .15s; white-space: nowrap;
+  display: flex; align-items: center; gap: .35rem;
+}
+.btn-header-dl:hover:not(:disabled) { background: var(--gold2); transform: translateY(-1px); }
+.btn-header-dl:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.header-dl-status { font-size: .75rem; color: var(--muted); white-space: nowrap; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -464,11 +476,16 @@ a:hover { text-decoration: underline; }
       <div class="subtitle">Twilight Imperium 4th Edition</div>
     </div>
     <div class="spacer"></div>
-    <button class="btn-rand" @click="showRand = true">🎲 Randomize</button>
     <div class="sel-count">
       <strong>{{ selected.length }}</strong> selected
       <span v-if="selected.length === 0" style="color:var(--dim)"> — pick at least 1</span>
     </div>
+    <span v-if="downloadStatus" class="header-dl-status">{{ downloadStatus }}</span>
+    <button class="btn-header-dl" @click="downloadDocx"
+            :disabled="selected.length < 1 || downloading">
+      <span v-if="downloading"><span class="spinner" style="border-top-color:var(--bg)"></span></span>
+      <span v-else>⬇ Download DOCX</span>
+    </button>
   </header>
 
   <!-- ── Layout ──────────────────────────────────────────────────────── -->
@@ -482,6 +499,9 @@ a:hover { text-decoration: underline; }
           <button class="btn-sm" @click="selectAll">Select All</button>
           <button class="btn-sm danger" @click="clearAll">Clear</button>
         </div>
+        <button class="btn-primary" style="margin-top:.5rem" @click="showRand = true">
+          🎲 Randomize Factions
+        </button>
       </div>
 
       <div id="faction-list">
@@ -516,15 +536,9 @@ a:hover { text-decoration: underline; }
       </div>
 
       <div id="sidebar-footer">
-        <div class="download-status" v-if="downloadStatus">{{ downloadStatus }}</div>
-        <button class="btn-primary" @click="downloadDocx"
-                :disabled="selected.length < 1 || downloading">
-          <span v-if="downloading"><span class="spinner"></span> Generating…</span>
-          <span v-else>⬇ Download DOCX</span>
-        </button>
-        <button class="btn-secondary" @click="previewSelected"
+        <button class="btn-primary" @click="previewSelected"
                 :disabled="selected.length < 1">
-          ↑ Preview Selected
+          ↑ Load Selection
         </button>
       </div>
     </nav>

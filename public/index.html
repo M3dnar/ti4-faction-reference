@@ -340,6 +340,110 @@ a:hover { text-decoration: underline; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 .sheet-art-symbol { object-fit: contain !important; background: var(--bg3) !important; padding: .75rem; }
+
+/* ── Randomizer ──────────────────────────────────────────────────────────── */
+.btn-rand {
+  padding: .4rem 1rem; border-radius: 6px;
+  border: 1px solid var(--gold); background: transparent;
+  color: var(--gold); cursor: pointer; font-size: .85rem;
+  font-weight: 600; transition: all .15s; white-space: nowrap;
+}
+.btn-rand:hover { background: var(--gold); color: var(--bg); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 1rem;
+}
+.modal {
+  background: var(--bg2); border: 2px solid var(--gold);
+  border-radius: 12px; width: 100%; max-width: 580px;
+  max-height: 90vh; overflow-y: auto;
+  padding: 1.5rem; position: relative;
+}
+.modal-title {
+  font-size: 1.25rem; font-weight: 700; color: var(--gold);
+  margin-bottom: 1.2rem; display: flex; align-items: center; gap: .6rem;
+}
+.modal-close {
+  position: absolute; top: .9rem; right: 1rem;
+  background: none; border: none; color: var(--dim);
+  font-size: 1.4rem; cursor: pointer; padding: .2rem .5rem; line-height: 1;
+}
+.modal-close:hover { color: var(--gold); }
+.rand-section-label {
+  font-size: .72rem; color: var(--dim); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; margin-bottom: .5rem;
+}
+.player-selector { display: flex; gap: .4rem; margin-bottom: 1.3rem; }
+.player-btn {
+  flex: 1; padding: .5rem; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); cursor: pointer; font-size: .95rem;
+  font-weight: 700; transition: all .15s;
+}
+.player-btn:hover { border-color: var(--gold); color: var(--gold); }
+.player-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.preset-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.3rem; }
+.preset-btn {
+  padding: .3rem .75rem; border-radius: 5px;
+  border: 1px solid var(--border); background: var(--bg3);
+  color: var(--muted); cursor: pointer; font-size: .78rem;
+  font-weight: 600; transition: all .15s;
+}
+.preset-btn:hover { border-color: var(--gold); color: var(--gold); }
+.exp-filters { margin-bottom: 1.2rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.exp-filter-row {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .55rem .9rem; cursor: pointer; user-select: none;
+  transition: background .12s;
+}
+.exp-filter-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+.exp-filter-row:hover { background: var(--bg3); }
+.exp-checkbox {
+  width: 17px; height: 17px; border: 2px solid var(--border);
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .15s;
+}
+.exp-checkbox.checked { background: var(--gold); border-color: var(--gold); }
+.exp-checkbox.checked::after { content: '✓'; color: var(--bg); font-size: .72rem; font-weight: 900; }
+.exp-filter-label { font-size: .87rem; flex: 1; }
+.exp-filter-count { font-size: .73rem; color: var(--dim); }
+.rand-pool-info { font-size: .82rem; color: var(--dim); margin-bottom: 1rem; }
+.rand-pool-info strong { color: var(--gold); }
+.rand-pool-warn { color: #e67e22; }
+.rand-results { display: flex; flex-direction: column; gap: .45rem; margin-top: 1.1rem; }
+.rand-row {
+  display: flex; align-items: center; gap: .75rem;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: .55rem .85rem;
+  animation: randIn .22s ease both;
+}
+.rand-row:nth-child(1){animation-delay:.04s} .rand-row:nth-child(2){animation-delay:.09s}
+.rand-row:nth-child(3){animation-delay:.14s} .rand-row:nth-child(4){animation-delay:.19s}
+.rand-row:nth-child(5){animation-delay:.24s} .rand-row:nth-child(6){animation-delay:.29s}
+.rand-row:nth-child(7){animation-delay:.34s} .rand-row:nth-child(8){animation-delay:.39s}
+@keyframes randIn {
+  from { opacity:0; transform:translateX(-12px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+.rand-pnum {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 700; color: var(--gold); flex-shrink: 0;
+}
+.rand-sym {
+  width: 38px; height: 38px; border-radius: 6px;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
+}
+.rand-sym img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+.rand-sym-letter { color: var(--gold); font-weight: 700; font-size: .9rem; }
+.rand-fname { font-size: .9rem; font-weight: 600; }
+.rand-fexp  { font-size: .7rem; color: var(--dim); margin-top: .1rem; }
+.rand-err   { color: #e67e22; font-size: .85rem; text-align: center; padding: .5rem 0; }
 </style>
 </head>
 <body>
@@ -352,6 +456,7 @@ a:hover { text-decoration: underline; }
       <div class="subtitle">Twilight Imperium 4th Edition</div>
     </div>
     <div class="spacer"></div>
+    <button class="btn-rand" @click="showRand = true">🎲 Randomize</button>
     <div class="sel-count">
       <strong>{{ selected.length }}</strong> selected
       <span v-if="selected.length === 0" style="color:var(--dim)"> — pick at least 1</span>
@@ -617,6 +722,84 @@ a:hover { text-decoration: underline; }
     </main>
   </div>
 
+
+  <!-- ── Randomizer Modal ────────────────────────────────────────────── -->
+  <div class="modal-overlay" v-if="showRand" @click.self="showRand = false">
+    <div class="modal">
+      <button class="modal-close" @click="showRand = false">✕</button>
+      <div class="modal-title">🎲 Faction Randomizer</div>
+
+      <!-- Player count -->
+      <div class="rand-section-label">Number of Players</div>
+      <div class="player-selector">
+        <button v-for="n in [3,4,5,6,7,8]" :key="n"
+                class="player-btn" :class="{ active: randPlayers === n }"
+                @click="randPlayers = n; randResults = []">{{ n }}</button>
+      </div>
+
+      <!-- Presets -->
+      <div class="rand-section-label">Quick Presets</div>
+      <div class="preset-row">
+        <button class="preset-btn" @click="applyPreset('all')">All Factions</button>
+        <button class="preset-btn" @click="applyPreset('base')">Base Only</button>
+        <button class="preset-btn" @click="applyPreset('basepok')">Base + PoK</button>
+        <button class="preset-btn" @click="applyPreset('nods')">No DS</button>
+        <button class="preset-btn" @click="applyPreset('note')">No TE</button>
+        <button class="preset-btn" @click="applyPreset('notenodc')">No TE or DS</button>
+      </div>
+
+      <!-- Expansion toggles -->
+      <div class="rand-section-label">Expansion Filter</div>
+      <div class="exp-filters">
+        <div v-for="exp in randExpansionList" :key="exp.key"
+             class="exp-filter-row" @click="toggleRandExp(exp.key)">
+          <div class="exp-checkbox" :class="{ checked: randEnabledExps.has(exp.key) }"></div>
+          <span class="exp-filter-label">{{ exp.label }}</span>
+          <span class="exp-filter-count">{{ exp.count }} factions</span>
+        </div>
+      </div>
+
+      <!-- Pool info -->
+      <div class="rand-pool-info">
+        Pool: <strong>{{ randPoolSize }}</strong> effective slots available
+        <span v-if="randPoolSize < randPlayers" class="rand-pool-warn">
+          — need at least {{ randPlayers }} for this player count
+        </span>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="display:flex;gap:.5rem;margin-bottom:.25rem">
+        <button class="btn-primary" style="flex:1"
+                @click="doRandomize" :disabled="randPoolSize < randPlayers">
+          🎲 Randomize!
+        </button>
+        <button class="btn-secondary" v-if="randResults.length"
+                @click="randResults = []" style="padding:.5rem .9rem">
+          ✕ Clear
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div v-if="randError" class="rand-err">{{ randError }}</div>
+
+      <!-- Results -->
+      <div v-if="randResults.length" class="rand-results">
+        <div v-for="(f, i) in randResults" :key="f.id + i" class="rand-row">
+          <div class="rand-pnum">P{{ i + 1 }}</div>
+          <div class="rand-sym">
+            <img v-if="hasSymbol(f.id)" :src="symbolUrl(f.id)" :alt="f.name"/>
+            <span v-else class="rand-sym-letter">{{ f.name.charAt(0) }}</span>
+          </div>
+          <div>
+            <div class="rand-fname">{{ f.name }}</div>
+            <div class="rand-fexp">{{ f.expansion }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Loading state -->
   <div v-else style="display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:1rem">
     <div class="spinner" style="width:40px;height:40px;border-width:4px"></div>
@@ -638,6 +821,85 @@ createApp({
     const artErrors      = reactive({});
     const downloading    = ref(false);
     const downloadStatus = ref('');
+
+    // ── Randomizer ───────────────────────────────────────────────────────────
+    const showRand        = ref(false);
+    const randPlayers     = ref(6);
+    const randResults     = ref([]);
+    const randError       = ref('');
+    const randEnabledExps = ref(new Set([
+      'Base Game (TI4)', 'Prophecy of Kings', 'Codex Volume III: Decree',
+      "Thunder's Edge", 'Discordant Stars (Fan Expansion)'
+    ]));
+
+    const RAND_EXP_DEFS = [
+      { key: 'Base Game (TI4)',                  label: 'Base Game (TI4)' },
+      { key: 'Prophecy of Kings',                label: 'Prophecy of Kings' },
+      { key: 'Codex Volume III: Decree',         label: 'Codex Volume III: Decree' },
+      { key: "Thunder's Edge",                   label: "Thunder's Edge" },
+      { key: 'Discordant Stars (Fan Expansion)', label: 'Discordant Stars (Fan Expansion)' },
+    ];
+
+    const randExpansionList = computed(() =>
+      RAND_EXP_DEFS.map(e => ({
+        ...e,
+        count: allFactions.value.filter(f => f.expansion === e.key).length,
+      }))
+    );
+
+    const randPoolSize = computed(() => {
+      const pool = allFactions.value.filter(f => randEnabledExps.value.has(f.expansion));
+      const hasObs  = pool.some(f => f.id === 'obsidian');
+      const hasFirm = pool.some(f => f.id === 'firmament');
+      // Obsidian + Firmament are mutually exclusive, so together they count as 1 slot
+      return pool.length - (hasObs && hasFirm ? 1 : 0);
+    });
+
+    function toggleRandExp(key) {
+      const next = new Set(randEnabledExps.value);
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
+      randEnabledExps.value = next;
+      randResults.value = [];
+    }
+
+    function applyPreset(preset) {
+      const sets = {
+        all:      new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree',"Thunder's Edge",'Discordant Stars (Fan Expansion)']),
+        base:     new Set(['Base Game (TI4)']),
+        basepok:  new Set(['Base Game (TI4)','Prophecy of Kings']),
+        nods:     new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree',"Thunder's Edge"]),
+        note:     new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree','Discordant Stars (Fan Expansion)']),
+        notenodc: new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree']),
+      };
+      randEnabledExps.value = sets[preset] || sets.all;
+      randResults.value = [];
+    }
+
+    function doRandomize() {
+      randError.value  = '';
+      randResults.value = [];
+      let pool = allFactions.value
+        .filter(f => randEnabledExps.value.has(f.expansion))
+        .map(f => ({ ...f, weight: (f.id === 'obsidian' || f.id === 'firmament') ? 0.5 : 1.0 }));
+
+      if (randPoolSize.value < randPlayers.value) {
+        randError.value = `Not enough factions for ${randPlayers.value} players with current filters.`;
+        return;
+      }
+
+      const picked = [];
+      for (let i = 0; i < randPlayers.value; i++) {
+        const total = pool.reduce((s, f) => s + f.weight, 0);
+        let r = Math.random() * total;
+        let chosen = pool[pool.length - 1];
+        for (const f of pool) { r -= f.weight; if (r <= 0) { chosen = f; break; } }
+        picked.push(chosen);
+        pool = pool.filter(f => f.id !== chosen.id);
+        if (chosen.id === 'obsidian')  pool = pool.filter(f => f.id !== 'firmament');
+        if (chosen.id === 'firmament') pool = pool.filter(f => f.id !== 'obsidian');
+      }
+      randResults.value = picked;
+    }
 
     // Artcrop art available for these IDs
     const ART_IDS = new Set([
@@ -780,6 +1042,9 @@ createApp({
       isSelected, toggleFaction, toggle,
       isLoreOpen, toggleLore,
       selectAll, clearAll, hasArt, hasSymbol, artUrl, symbolUrl,
+      showRand, randPlayers, randResults, randError,
+      randEnabledExps, randExpansionList, randPoolSize,
+      toggleRandExp, applyPreset, doRandomize,
       techClass, techLabel, scrollToTop, downloadDocx,
     };
   }

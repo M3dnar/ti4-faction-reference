@@ -3343,7 +3343,10 @@
         "text": "ACTION: Exhaust this card. Score 1 secret objective from your hand without meeting its requirements. Then, choose 1 other player: they must also score 1 of their secret objectives, revealing it publicly.",
         "unlock": "Score 2 secret objectives."
       }
-    }
+    },
+    "startingUnits": [],
+    "startingTech": [],
+    "commodities": 0
   },
   {
     "id": "lastbastion",

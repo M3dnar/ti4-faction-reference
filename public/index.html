@@ -341,6 +341,13 @@ a:hover { text-decoration: underline; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 .sheet-art-symbol { object-fit: contain !important; background: var(--bg3) !important; padding: .75rem; }
 
+/* ── Mobile header fix ───────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  #app-header { flex-wrap: wrap; padding: .6rem 1rem; gap: .4rem; }
+  #app-header .spacer { display: none; }
+  #app-header .sel-count { font-size: .78rem; padding: .25rem .6rem; }
+}
+
 /* ── Randomizer ──────────────────────────────────────────────────────────── */
 .btn-rand {
   padding: .4rem 1rem; border-radius: 6px;
@@ -445,6 +452,7 @@ a:hover { text-decoration: underline; }
 .rand-fexp  { font-size: .7rem; color: var(--dim); margin-top: .1rem; }
 .rand-err   { color: #e67e22; font-size: .85rem; text-align: center; padding: .5rem 0; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -514,7 +522,7 @@ a:hover { text-decoration: underline; }
           <span v-if="downloading"><span class="spinner"></span> Generating…</span>
           <span v-else>⬇ Download DOCX</span>
         </button>
-        <button class="btn-secondary" @click="scrollToTop"
+        <button class="btn-secondary" @click="previewSelected"
                 :disabled="selected.length < 1">
           ↑ Preview Selected
         </button>
@@ -526,8 +534,14 @@ a:hover { text-decoration: underline; }
       <!-- Empty state -->
       <div class="empty-state" v-if="selectedFactions.length === 0">
         <div class="icon">🌌</div>
-        <h2 style="color:var(--muted)">No factions selected</h2>
-        <p>Choose factions from the sidebar to preview their reference sheets.</p>
+        <template v-if="selected.length === 0">
+          <h2 style="color:var(--muted)">No factions selected</h2>
+          <p>Choose factions from the sidebar to preview their reference sheets.</p>
+        </template>
+        <template v-else>
+          <h2 style="color:var(--muted)">{{ selected.length }} faction{{ selected.length === 1 ? '' : 's' }} selected</h2>
+          <p>Click <strong style="color:var(--gold)">↑ Preview Selected</strong> in the sidebar to display faction sheets.</p>
+        </template>
       </div>
 
       <!-- Faction sheets -->
@@ -603,7 +617,7 @@ a:hover { text-decoration: underline; }
                 </div>
                 <div class="stat-box" style="grid-column: span 2">
                   <div class="label">Starting Units</div>
-                  <div class="value" style="font-size:.8rem">{{ f.startingUnits.join(', ') }}</div>
+                  <div class="value" style="font-size:.8rem">{{ (f.startingUnits || []).join(', ') || '—' }}</div>
                 </div>
               </div>
             </div>
@@ -628,7 +642,7 @@ a:hover { text-decoration: underline; }
               <h3>Technologies</h3>
               <div style="margin-bottom:.5rem">
                 <span style="font-size:.75rem;color:var(--dim)">Starting: </span>
-                <span style="font-size:.82rem;color:var(--white)">{{ f.startingTech.join(', ') }}</span>
+                <span style="font-size:.82rem;color:var(--white)">{{ (f.startingTech || []).join(', ') || 'None' }}</span>
               </div>
               <div class="tech-list">
                 <div v-for="t in f.factionTech" :key="t.name" class="tech-item">
@@ -821,6 +835,7 @@ createApp({
     const artErrors      = reactive({});
     const downloading    = ref(false);
     const downloadStatus = ref('');
+    const rendered       = ref([]);  // IDs whose sheets are actually shown in main panel
 
     // ── Randomizer ───────────────────────────────────────────────────────────
     const showRand        = ref(false);
@@ -901,6 +916,7 @@ createApp({
       randResults.value = picked;
       // Pre-load faction sheets in the background so they're ready when modal closes
       selected.value = picked.map(f => f.id);
+      rendered.value = picked.map(f => f.id);
     }
 
     // Artcrop art available for these IDs
@@ -947,7 +963,7 @@ createApp({
     });
 
     const selectedFactions = computed(() =>
-      allFactions.value.filter(f => selected.value.includes(f.id))
+      allFactions.value.filter(f => rendered.value.includes(f.id))
     );
 
     function isSelected(id) { return selected.value.includes(id); }
@@ -978,7 +994,12 @@ createApp({
       selected.value = [...selected.value, ...toAdd];
     }
 
-    function clearAll() { selected.value = []; }
+    function clearAll() { selected.value = []; rendered.value = []; }
+
+    function previewSelected() {
+      rendered.value = [...selected.value];
+      scrollToTop();
+    }
 
     function hasArt(id)    { return ART_IDS.has(id) && !artErrors[id]; }
     function hasSymbol(id) { return SYMBOL_IDS.has(id); }
@@ -1007,43 +1028,182 @@ createApp({
     }
 
     async function downloadDocx() {
-      if (selected.value.length < 2) return;
+      if (selected.value.length < 1) return;
       downloading.value = true;
-      downloadStatus.value = 'Building document…';
+      downloadStatus.value = 'Building document\u2026';
       try {
-        const resp = await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ factionIds: selected.value }),
-        });
-        if (!resp.ok) {
-          const err = await resp.json().catch(() => ({ error: 'Unknown error' }));
-          downloadStatus.value = '✗ ' + err.error;
-          return;
+        const factions = allFactions.value.filter(f => selected.value.includes(f.id));
+
+        // XML helpers
+        function esc(s) {
+          if (s == null) return '';
+          return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                          .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
-        const blob = await resp.blob();
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href     = url;
-        a.download = `TI4_Factions.docx`;
+        function wp(text, styleId) {
+          const sp = styleId ? `<w:pPr><w:pStyle w:val="${styleId}"/></w:pPr>` : '';
+          return `<w:p>${sp}<w:r><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p>`;
+        }
+        function wbp(text) {
+          return `<w:p><w:r><w:rPr><w:b/></w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p>`;
+        }
+        function h1(t) { return wp(t, 'TIH1'); }
+        function h2(t) { return wp(t, 'TIH2'); }
+        function pgBreak() { return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'; }
+        function tRow(cells, bold) {
+          return '<w:tr>' + cells.map(c => {
+            const rpr = bold ? '<w:rPr><w:b/></w:rPr>' : '';
+            return `<w:tc><w:p><w:r>${rpr}<w:t xml:space="preserve">${esc(c)}</w:t></w:r></w:p></w:tc>`;
+          }).join('') + '</w:tr>';
+        }
+
+        function buildFactionXml(f) {
+          const out = [];
+          out.push(h1(f.name));
+          out.push(wp(f.expansion, 'TISub'));
+
+          if (f.lore && f.lore.length) {
+            out.push(h2('Lore'));
+            f.lore.forEach(l => out.push(wp(l)));
+          }
+
+          if (f.planets && f.planets.length) {
+            out.push(h2('Home System'));
+            const borders = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:left w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:right w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="666666"/></w:tblBorders>';
+            out.push(`<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}</w:tblPr>`);
+            out.push(tRow(['Planet','Res','Inf','Trait','Type'], true));
+            f.planets.forEach(pl => out.push(tRow([
+              pl.name, String(pl.res ?? ''), String(pl.inf ?? ''),
+              pl.trait || '\u2014', pl.type || ''
+            ])));
+            out.push('</w:tbl>');
+          }
+
+          const statLines = [];
+          if (f.commodities != null) statLines.push(`Commodities: ${f.commodities}`);
+          if (f.startingUnits && f.startingUnits.length) statLines.push(`Starting Units: ${f.startingUnits.join(', ')}`);
+          if (f.startingTech  && f.startingTech.length)  statLines.push(`Starting Tech: ${f.startingTech.join(', ')}`);
+          if (statLines.length) {
+            out.push(h2('Starting Setup'));
+            statLines.forEach(l => out.push(wp(l)));
+          }
+
+          if (f.abilities && f.abilities.length) {
+            out.push(h2('Faction Abilities'));
+            f.abilities.forEach(a => { out.push(wbp(a.name)); out.push(wp(a.text)); });
+          }
+
+          if (f.factionTech && f.factionTech.length) {
+            out.push(h2('Faction Technologies'));
+            f.factionTech.forEach(t => {
+              const prereq = t.prereqs ? ` (${t.prereqs})` : '';
+              out.push(wbp(`${t.name}${prereq}  [${t.color || '?'}]`));
+              if (t.ability) out.push(wp(t.ability));
+            });
+          }
+
+          if (f.flagship || f.mech) {
+            out.push(h2('Faction Units'));
+            if (f.flagship) {
+              const s = [
+                f.flagship.cost  != null ? `Cost: ${f.flagship.cost}`   : '',
+                f.flagship.combat         ? `Combat: ${f.flagship.combat}` : '',
+                f.flagship.move  != null ? `Move: ${f.flagship.move}`   : '',
+                f.flagship.cap   != null ? `Cap: ${f.flagship.cap}`     : '',
+                f.flagship.sustain        ? 'Sustain Damage'             : '',
+              ].filter(Boolean).join('  |  ');
+              out.push(wbp(`${f.flagship.name}  \u2014  Flagship`));
+              if (s) out.push(wp(s));
+              if (f.flagship.ability) out.push(wp(f.flagship.ability));
+            }
+            if (f.mech) {
+              const s = [
+                f.mech.cost   != null ? `Cost: ${f.mech.cost}`     : '',
+                f.mech.combat          ? `Combat: ${f.mech.combat}` : '',
+                f.mech.sustain         ? 'Sustain Damage'           : '',
+              ].filter(Boolean).join('  |  ');
+              out.push(wbp(`${f.mech.name}  \u2014  Mech`));
+              if (s) out.push(wp(s));
+              if (f.mech.ability) out.push(wp(f.mech.ability));
+            }
+          }
+
+          if (f.leaders) {
+            out.push(h2('Leaders'));
+            ['agent','commander','hero'].forEach(role => {
+              const l = f.leaders[role];
+              if (!l) return;
+              const heroType = (role === 'hero' && l.ability) ? `  \u2014  ${l.ability}` : '';
+              out.push(wbp(`${l.name}  (${role.charAt(0).toUpperCase() + role.slice(1)}${heroType})`));
+              if (l.unlock) out.push(wp(`Unlock: ${l.unlock}`));
+              if (l.text)   out.push(wp(l.text));
+            });
+          }
+
+          if (f.promissory) {
+            out.push(h2('Promissory Note'));
+            out.push(wbp(f.promissory.name));
+            out.push(wp(f.promissory.text));
+          }
+          if (f.breakthrough) {
+            out.push(h2('Flagship Breakthrough'));
+            out.push(wbp(f.breakthrough.name));
+            if (f.breakthrough.synergy) out.push(wp(f.breakthrough.synergy));
+            out.push(wp(f.breakthrough.text));
+          }
+
+          return out.join('');
+        }
+
+        const bodyContent = factions.map((f, i) =>
+          buildFactionXml(f) + (i < factions.length - 1 ? pgBreak() : '')
+        ).join('');
+
+        const WNS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+        const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${WNS}><w:body>${bodyContent}</w:body></w:document>`;
+
+        const ctXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
+
+        const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+
+        const docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+
+        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${WNS}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/><w:rPr><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TIH1"><w:name w:val="TI Heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:before="280" w:after="100"/></w:pPr><w:rPr><w:b/><w:sz w:val="44"/><w:szCs w:val="44"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TIH2"><w:name w:val="TI Heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:before="200" w:after="60"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TISub"><w:name w:val="TI Subtitle"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="140"/></w:pPr><w:rPr><w:i/><w:sz w:val="20"/><w:szCs w:val="20"/><w:color w:val="888888"/></w:rPr></w:style></w:styles>`;
+
+        const zip = new JSZip();
+        zip.file('[Content_Types].xml', ctXml);
+        zip.file('_rels/.rels',          relsXml);
+        zip.file('word/document.xml',    docXml);
+        zip.file('word/_rels/document.xml.rels', docRelsXml);
+        zip.file('word/styles.xml',      stylesXml);
+
+        const blob = await zip.generateAsync({
+          type: 'blob',
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'TI4_Factions.docx';
         a.click();
         URL.revokeObjectURL(url);
-        downloadStatus.value = '✓ Download complete!';
+        downloadStatus.value = '\u2713 Download complete!';
         setTimeout(() => { downloadStatus.value = ''; }, 3000);
       } catch (e) {
-        downloadStatus.value = '✗ Network error';
+        downloadStatus.value = '\u2717 Error: ' + (e.message || 'Unknown error');
       } finally {
         downloading.value = false;
       }
     }
 
     return {
-      allFactions, loading, selected, search, collapsed,
+      allFactions, loading, selected, rendered, search, collapsed,
       openedLore, artErrors, downloading, downloadStatus,
       filteredExpansions, selectedFactions,
       isSelected, toggleFaction, toggle,
       isLoreOpen, toggleLore,
-      selectAll, clearAll, hasArt, hasSymbol, artUrl, symbolUrl,
+      selectAll, clearAll, previewSelected,
+      hasArt, hasSymbol, artUrl, symbolUrl,
       showRand, randPlayers, randResults, randError,
       randEnabledExps, randExpansionList, randPoolSize,
       toggleRandExp, applyPreset, doRandomize,

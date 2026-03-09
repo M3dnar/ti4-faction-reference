@@ -339,6 +339,7 @@ a:hover { text-decoration: underline; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+.sheet-art-symbol { object-fit: contain !important; background: var(--bg3) !important; padding: .75rem; }
 </style>
 </head>
 <body>
@@ -384,6 +385,8 @@ a:hover { text-decoration: underline; }
                  @click="toggleFaction(f.id)">
               <div class="thumb">
                 <img v-if="hasArt(f.id)" :src="artUrl(f.id)" @error="artErrors[f.id]=true" :alt="f.name"/>
+                <img v-else-if="hasSymbol(f.id)" :src="symbolUrl(f.id)" :alt="f.name"
+                     style="width:100%;height:100%;object-fit:contain;padding:3px;background:var(--bg)"/>
                 <template v-else>{{ f.name.charAt(0) }}</template>
               </div>
               <div class="fname">
@@ -437,6 +440,8 @@ a:hover { text-decoration: underline; }
             <img v-if="hasArt(f.id) && !artErrors[f.id]"
                  class="sheet-art" :src="artUrl(f.id)"
                  @error="artErrors[f.id]=true" :alt="f.name"/>
+            <img v-else-if="hasSymbol(f.id)"
+                 class="sheet-art sheet-art-symbol" :src="symbolUrl(f.id)" :alt="f.name"/>
             <div v-else class="sheet-art-placeholder">{{ f.name.charAt(0) }}</div>
             <div class="sheet-title">
               <h1>{{ f.name }}</h1>
@@ -634,9 +639,18 @@ createApp({
     const downloading    = ref(false);
     const downloadStatus = ref('');
 
-    // Art available for these IDs
+    // Artcrop art available for these IDs
     const ART_IDS = new Set([
       'empyrean','firmament','hacan','mahact','nekro','norr','saar','titans','winnu','yssaril'
+    ]);
+
+    // Faction symbol icons available for these IDs
+    const SYMBOL_IDS = new Set([
+      'arborec','argent','celdauri','creuss','crimson','cymiae','deepwrought','dihmohn',
+      'edyn','freesystems','ghemina','ghoti','gledge','jolnar','keleres','kollecc',
+      'kortali','kyro','letnev','mahact','mentak','monks','muaat','mykomentori',
+      'naalu','naazrokha','nekro','nomad','norr','obsidian','olradin','ralnel',
+      'saar','titans','vaden','veldyr','vuilraith','winnu','yin','yssaril'
     ]);
 
     const EXPANSIONS_ORDER = [
@@ -696,8 +710,10 @@ createApp({
 
     function clearAll() { selected.value = []; }
 
-    function hasArt(id) { return ART_IDS.has(id) && !artErrors[id]; }
-    function artUrl(id) { return `/art/artcrop_${id}.jpg`; }
+    function hasArt(id)    { return ART_IDS.has(id) && !artErrors[id]; }
+    function hasSymbol(id) { return SYMBOL_IDS.has(id); }
+    function artUrl(id)    { return `/art/artcrop_${id}.jpg`; }
+    function symbolUrl(id) { return `/art/symbol_${id}.webp`; }
 
     function techClass(color) {
       if (!color) return 'tech-Unknown';
@@ -757,7 +773,7 @@ createApp({
       filteredExpansions, selectedFactions,
       isSelected, toggleFaction, toggle,
       isLoreOpen, toggleLore,
-      selectAll, clearAll, hasArt, artUrl,
+      selectAll, clearAll, hasArt, hasSymbol, artUrl, symbolUrl,
       techClass, techLabel, scrollToTop, downloadDocx,
     };
   }

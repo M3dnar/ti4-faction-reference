@@ -899,6 +899,8 @@ createApp({
         if (chosen.id === 'firmament') pool = pool.filter(f => f.id !== 'obsidian');
       }
       randResults.value = picked;
+      // Pre-load faction sheets in the background so they're ready when modal closes
+      selected.value = picked.map(f => f.id);
     }
 
     // Artcrop art available for these IDs

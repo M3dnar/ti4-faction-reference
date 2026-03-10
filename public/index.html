@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TI4 Faction Reference</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<style>
+/* ── Reset + Base ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #1E1E24;
+  --bg2:      #262630;
+  --bg3:      #2C2F48;
+  --gold:     #C9A845;
+  --gold2:    #D4B84E;
+  --white:    #EFEFEF;
+  --muted:    #AAAABC;
+  --dim:      #888899;
+  --border:   #3C3C50;
+  --accent:   #1a3a5c;
+  --danger:   #c0392b;
+}
+html { font-size: 15px; scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--white); font-family: 'Arial', sans-serif;
+       min-height: 100vh; }
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+h1 { color: var(--gold); font-size: 1.9rem; font-weight: 700; }
+h2 { color: var(--gold); font-size: 1.35rem; font-weight: 700; margin-bottom: .4rem; }
+h3 { color: var(--gold); font-size: 1.05rem; font-weight: 700; margin-bottom: .3rem; }
+p  { line-height: 1.65; }
+a  { color: var(--gold2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── App header ──────────────────────────────────────────────────────────── */
+#app-header {
+  background: var(--bg2);
+  border-bottom: 2px solid var(--gold);
+  padding: .7rem 1.5rem;
+  display: flex; align-items: center; gap: 1.2rem;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-brand { flex-shrink: 0; }
+.header-brand .logo {
+  font-size: 1.15rem; font-weight: 700; color: var(--gold);
+  letter-spacing: .05em; white-space: nowrap;
+}
+.header-brand .subtitle { font-size: .78rem; color: var(--dim); }
+
+/* ── Header navigation links ─────────────────────────────────────────────── */
+.header-nav {
+  flex: 1; display: flex; align-items: center;
+  justify-content: center; gap: .1rem; flex-wrap: wrap;
+}
+.hnav-link {
+  display: inline-flex; flex-direction: column; align-items: center;
+  padding: .3rem .65rem; color: var(--muted); text-decoration: none;
+  font-size: .78rem; font-weight: 600; border-radius: 5px;
+  border: 1px solid transparent; transition: all .15s;
+  white-space: nowrap; line-height: 1.25; gap: .05rem;
+}
+.hnav-link:hover {
+  color: var(--gold); text-decoration: none;
+  border-color: rgba(201,168,69,.3); background: rgba(201,168,69,.08);
+}
+.hnav-sub {
+  font-size: .56rem; font-weight: 800; letter-spacing: .08em;
+  color: var(--gold); opacity: .6; text-transform: uppercase;
+}
+.hnav-sep {
+  width: 1px; height: 16px; background: var(--border);
+  flex-shrink: 0; margin: 0 .15rem; align-self: center;
+}
+
+/* ── Header right controls ───────────────────────────────────────────────── */
+.header-controls {
+  flex-shrink: 0; display: flex; align-items: center; gap: .6rem;
+}
+.header-controls .sel-count {
+  font-size: .85rem; color: var(--muted);
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: .3rem .8rem; white-space: nowrap;
+}
+.header-controls .sel-count strong { color: var(--gold); }
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+#layout { display: flex; min-height: calc(100vh - 56px); }
+#sidebar {
+  width: 340px; min-width: 280px; max-width: 380px;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 56px; height: calc(100vh - 56px); overflow: hidden;
+}
+#main { flex: 1; padding: 1.5rem; overflow-y: auto; }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+#sidebar-header {
+  padding: .9rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#sidebar-header h2 { font-size: 1rem; margin-bottom: .5rem; }
+.search-bar {
+  width: 100%; padding: .45rem .7rem;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  color: var(--white); font-size: .85rem; outline: none;
+}
+.search-bar:focus { border-color: var(--gold); }
+.sidebar-actions {
+  display: flex; gap: .5rem; margin-top: .5rem;
+}
+.btn-sm {
+  flex: 1; padding: .35rem .5rem; font-size: .78rem; font-weight: 600;
+  border-radius: 5px; border: 1px solid var(--border); cursor: pointer;
+  background: var(--bg3); color: var(--muted); transition: all .15s;
+}
+.btn-sm:hover { border-color: var(--gold); color: var(--gold); }
+.btn-sm.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+#faction-list { flex: 1; overflow-y: auto; padding: .5rem 0; }
+
+/* ── Expansion group ─────────────────────────────────────────────────────── */
+.exp-group { margin-bottom: .25rem; }
+.exp-label {
+  padding: .35rem 1rem;
+  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
+  color: var(--gold); text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  background: rgba(201,168,69,.08);
+  cursor: pointer; display: flex; align-items: center; gap: .4rem;
+}
+.exp-label .arrow { font-size: .65rem; transition: transform .2s; }
+.exp-label.collapsed .arrow { transform: rotate(-90deg); }
+
+/* ── Faction card in sidebar ─────────────────────────────────────────────── */
+.faction-item {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .45rem 1rem;
+  cursor: pointer; transition: background .12s;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  user-select: none;
+}
+.faction-item:hover { background: var(--bg3); }
+.faction-item.selected { background: rgba(201,168,69,.12); }
+.faction-item.disabled { opacity: .35; cursor: not-allowed; }
+.faction-item .thumb {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: var(--bg3); border: 2px solid var(--border);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700; color: var(--gold);
+}
+.faction-item.selected .thumb { border-color: var(--gold); }
+.faction-item .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.faction-item .fname { flex: 1; font-size: .85rem; line-height: 1.2; }
+.faction-item .fname small { display: block; font-size: .7rem; color: var(--dim); }
+.faction-item .check {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 2px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; transition: all .15s;
+}
+.faction-item.selected .check {
+  background: var(--gold); border-color: var(--gold); color: var(--bg);
+}
+
+/* ── Sidebar footer (action buttons) ─────────────────────────────────────── */
+#sidebar-footer {
+  padding: .8rem 1rem;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: .5rem;
+  flex-shrink: 0;
+}
+.btn-primary {
+  width: 100%; padding: .7rem 1rem; font-size: .9rem; font-weight: 700;
+  border: none; border-radius: 7px; cursor: pointer; transition: all .15s;
+  background: var(--gold); color: var(--bg);
+}
+.btn-primary:hover:not(:disabled) { background: var(--gold2); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-secondary {
+  width: 100%; padding: .6rem 1rem; font-size: .85rem; font-weight: 600;
+  border: 1px solid var(--gold); border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--gold); transition: all .15s;
+}
+.btn-secondary:hover:not(:disabled) { background: rgba(201,168,69,.12); }
+.btn-secondary:disabled { opacity: .4; cursor: not-allowed; }
+.download-status { font-size: .78rem; color: var(--muted); text-align: center; }
+
+/* ── Main content: empty state ───────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 60vh; gap: 1rem; opacity: .6;
+}
+.empty-state .icon { font-size: 4rem; }
+.empty-state p { color: var(--muted); font-size: .95rem; }
+
+/* ── Faction sheet ───────────────────────────────────────────────────────── */
+.faction-sheet {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 2.5rem; overflow: hidden;
+}
+.sheet-header {
+  background: var(--bg3); padding: 1.2rem 1.5rem;
+  border-bottom: 2px solid var(--gold);
+  display: flex; align-items: flex-start; gap: 1rem;
+}
+.sheet-art {
+  width: 90px; height: 90px; border-radius: 8px;
+  object-fit: cover; border: 2px solid var(--gold); flex-shrink: 0;
+}
+.sheet-art-placeholder {
+  width: 90px; height: 90px; border-radius: 8px;
+  background: var(--bg); border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; font-weight: 700; color: var(--gold);
+}
+.sheet-title h1 { font-size: 1.6rem; line-height: 1.1; }
+.sheet-title .expansion-badge {
+  display: inline-block; margin-top: .3rem;
+  background: rgba(201,168,69,.15); border: 1px solid rgba(201,168,69,.3);
+  color: var(--gold); font-size: .72rem; font-weight: 600;
+  padding: .15rem .5rem; border-radius: 4px; letter-spacing: .04em;
+}
+.sheet-body { padding: 1.2rem 1.5rem; }
+.sheet-section { margin-bottom: 1.4rem; }
+.sheet-section:last-child { margin-bottom: 0; }
+.section-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 1.2rem 0;
+}
+
+/* ── Lore ────────────────────────────────────────────────────────────────── */
+.lore-text {
+  font-size: .85rem; color: var(--muted); font-style: italic;
+  line-height: 1.6; cursor: pointer;
+}
+.lore-toggle { font-size: .75rem; color: var(--gold2); margin-top: .3rem; }
+
+/* ── Stats row ───────────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: .8rem; margin-bottom: .8rem;
+}
+.stat-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  padding: .6rem .8rem;
+}
+.stat-box .label { font-size: .7rem; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+.stat-box .value { font-size: .9rem; color: var(--white); margin-top: .15rem; }
+.stat-box .value strong { color: var(--gold); }
+
+/* ── Planets table ───────────────────────────────────────────────────────── */
+.ti-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+.ti-table th {
+  background: var(--bg3); color: var(--gold);
+  padding: .4rem .6rem; text-align: left; font-size: .72rem;
+  font-weight: 700; letter-spacing: .05em; border-bottom: 1px solid var(--border);
+}
+.ti-table td {
+  padding: .35rem .6rem; border-bottom: 1px solid rgba(255,255,255,.05);
+  color: var(--white);
+}
+.ti-table tr:nth-child(even) td { background: var(--bg3); }
+.trait-badge {
+  display: inline-block; font-size: .68rem; font-weight: 600;
+  padding: .1rem .4rem; border-radius: 3px; letter-spacing: .04em;
+}
+.trait-Cultural  { background: rgba(100,149,237,.2); color: #7aaff0; border: 1px solid rgba(100,149,237,.3); }
+.trait-Industrial{ background: rgba(255,165,0,.2);   color: #ffc966; border: 1px solid rgba(255,165,0,.3); }
+.trait-Hazardous { background: rgba(220,50,50,.2);   color: #f08080; border: 1px solid rgba(220,50,50,.3); }
+
+/* ── Ability list ────────────────────────────────────────────────────────── */
+.ability-list { display: flex; flex-direction: column; gap: .6rem; }
+.ability-item { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: .6rem .8rem; }
+.ability-item .aname { color: var(--gold); font-weight: 700; font-size: .85rem; margin-bottom: .2rem; }
+.ability-item .atext { font-size: .82rem; color: var(--white); line-height: 1.5; }
+
+/* ── Tech list ───────────────────────────────────────────────────────────── */
+.tech-list { display: flex; flex-direction: column; gap: .5rem; }
+.tech-item { display: flex; align-items: flex-start; gap: .6rem; }
+.tech-color {
+  font-size: .68rem; font-weight: 700; padding: .15rem .45rem;
+  border-radius: 4px; white-space: nowrap; flex-shrink: 0; margin-top: .15rem;
+}
+.tech-Biotic    { background: rgba(46,139,87,.25);  color: #6fcf97; border: 1px solid rgba(46,139,87,.4); }
+.tech-Propulsion{ background: rgba(52,152,219,.25); color: #7ec8e3; border: 1px solid rgba(52,152,219,.4); }
+.tech-Cybernetic{ background: rgba(241,196,15,.25); color: #f6dd6e; border: 1px solid rgba(241,196,15,.4); }
+.tech-Warfare   { background: rgba(231,76,60,.25);  color: #f08080; border: 1px solid rgba(231,76,60,.4); }
+.tech-Unknown   { background: rgba(150,150,150,.2); color: #aaa;    border: 1px solid rgba(150,150,150,.4); }
+.tech-info { flex: 1; }
+.tech-info .tname { font-weight: 700; font-size: .83rem; color: var(--white); }
+.tech-info .tprereq { font-size: .72rem; color: var(--dim); }
+.tech-info .tability { font-size: .8rem; color: var(--muted); margin-top: .15rem; line-height: 1.45; }
+
+/* ── Unit card ───────────────────────────────────────────────────────────── */
+.unit-cards { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.unit-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: .7rem .9rem;
+}
+.unit-card .uname { color: var(--gold); font-weight: 700; font-size: .88rem; margin-bottom: .4rem; }
+.unit-card .ustats { display: flex; flex-wrap: wrap; gap: .4rem .8rem; font-size: .78rem; color: var(--muted); }
+.unit-card .ustats span strong { color: var(--white); }
+.unit-card .uability { font-size: .78rem; color: var(--muted); margin-top: .5rem; line-height: 1.45;
+  border-top: 1px solid var(--border); padding-top: .45rem; }
+
+/* ── Leaders ─────────────────────────────────────────────────────────────── */
+.leader-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+.leader-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: .65rem .8rem;
+}
+.leader-card .lrole { font-size: .65rem; color: var(--gold); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; margin-bottom: .15rem; }
+.leader-card .lname { font-size: .85rem; font-weight: 700; color: var(--white); margin-bottom: .35rem; }
+.leader-card .ltext { font-size: .77rem; color: var(--muted); line-height: 1.45; }
+.leader-card .lunlock { font-size: .72rem; color: var(--dim); margin-bottom: .25rem; font-style: italic; }
+
+/* ── Promissory / Breakthrough ───────────────────────────────────────────── */
+.prom-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: .7rem .9rem;
+}
+.prom-box .pname { font-weight: 700; color: var(--gold); font-size: .85rem; margin-bottom: .2rem; }
+.prom-box .ptext { font-size: .8rem; color: var(--muted); line-height: 1.45; }
+.prom-box .psynergy { font-size: .72rem; color: var(--dim); font-style: italic; margin-bottom: .2rem; }
+
+/* ── Loading overlay ─────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid transparent; border-top-color: var(--bg);
+  border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #layout { flex-direction: column; }
+  #sidebar { width: 100%; max-width: 100%; height: auto; position: static; }
+  #faction-list { max-height: 45vh; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .unit-cards { grid-template-columns: 1fr; }
+  .leader-cards { grid-template-columns: 1fr; }
+  .hnav-link { padding: .25rem .5rem; font-size: .72rem; }
+  .hnav-sep  { display: none; }
+}
+@media (max-width: 560px) {
+  #app-header { flex-wrap: wrap; padding: .6rem 1rem; gap: .5rem; }
+  .header-nav { order: 3; width: 100%; justify-content: flex-start; gap: .05rem; }
+  .header-controls .sel-count { font-size: .75rem; padding: .25rem .55rem; }
+}
+
+/* ── Jump nav ────────────────────────────────────────────────────────────── */
+#jump-nav {
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  padding: .55rem 1.5rem; display: flex; align-items: center;
+  gap: .5rem; flex-wrap: wrap;
+}
+#jump-nav .jlabel { font-size: .72rem; color: var(--dim); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+.jump-link {
+  display: inline-block; padding: .22rem .65rem; font-size: .78rem; font-weight: 600;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 5px;
+  color: var(--muted); text-decoration: none; transition: all .15s; white-space: nowrap;
+}
+.jump-link:hover { border-color: var(--gold); color: var(--gold); text-decoration: none; }
+.back-top {
+  display: block; text-align: center; font-size: .78rem; color: var(--dim);
+  padding: .6rem 0 0; text-decoration: none;
+  border-top: 1px solid var(--border); margin-top: .6rem;
+}
+.back-top:hover { color: var(--gold); text-decoration: none; }
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+.sheet-art-symbol { object-fit: contain !important; background: var(--bg3) !important; padding: .75rem; }
+
+/* ── Mobile header fix ───────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  #app-header { flex-wrap: wrap; padding: .6rem 1rem; gap: .4rem; }
+  #app-header .spacer { display: none; }
+  #app-header .sel-count { font-size: .78rem; padding: .25rem .6rem; }
+}
+
+/* ── Randomizer ──────────────────────────────────────────────────────────── */
+.btn-rand {
+  padding: .4rem 1rem; border-radius: 6px;
+  border: 1px solid var(--gold); background: transparent;
+  color: var(--gold); cursor: pointer; font-size: .85rem;
+  font-weight: 600; transition: all .15s; white-space: nowrap;
+}
+.btn-rand:hover { background: var(--gold); color: var(--bg); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 1rem;
+}
+.modal {
+  background: var(--bg2); border: 2px solid var(--gold);
+  border-radius: 12px; width: 100%; max-width: 580px;
+  max-height: 90vh; overflow-y: auto;
+  padding: 1.5rem; position: relative;
+}
+.modal-title {
+  font-size: 1.25rem; font-weight: 700; color: var(--gold);
+  margin-bottom: 1.2rem; display: flex; align-items: center; gap: .6rem;
+}
+.modal-close {
+  position: absolute; top: .9rem; right: 1rem;
+  background: none; border: none; color: var(--dim);
+  font-size: 1.4rem; cursor: pointer; padding: .2rem .5rem; line-height: 1;
+}
+.modal-close:hover { color: var(--gold); }
+.rand-section-label {
+  font-size: .72rem; color: var(--dim); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; margin-bottom: .5rem;
+}
+.player-selector { display: flex; gap: .4rem; margin-bottom: 1.3rem; }
+.player-btn {
+  flex: 1; padding: .5rem; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--muted); cursor: pointer; font-size: .95rem;
+  font-weight: 700; transition: all .15s;
+}
+.player-btn:hover { border-color: var(--gold); color: var(--gold); }
+.player-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.preset-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.3rem; }
+.preset-btn {
+  padding: .3rem .75rem; border-radius: 5px;
+  border: 1px solid var(--border); background: var(--bg3);
+  color: var(--muted); cursor: pointer; font-size: .78rem;
+  font-weight: 600; transition: all .15s;
+}
+.preset-btn:hover { border-color: var(--gold); color: var(--gold); }
+.exp-filters { margin-bottom: 1.2rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.exp-filter-row {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .55rem .9rem; cursor: pointer; user-select: none;
+  transition: background .12s;
+}
+.exp-filter-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+.exp-filter-row:hover { background: var(--bg3); }
+.exp-checkbox {
+  width: 17px; height: 17px; border: 2px solid var(--border);
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .15s;
+}
+.exp-checkbox.checked { background: var(--gold); border-color: var(--gold); }
+.exp-checkbox.checked::after { content: '✓'; color: var(--bg); font-size: .72rem; font-weight: 900; }
+.exp-filter-label { font-size: .87rem; flex: 1; }
+.exp-filter-count { font-size: .73rem; color: var(--dim); }
+.rand-pool-info { font-size: .82rem; color: var(--dim); margin-bottom: 1rem; }
+.rand-pool-info strong { color: var(--gold); }
+.rand-pool-warn { color: #e67e22; }
+.rand-results { display: flex; flex-direction: column; gap: .45rem; margin-top: 1.1rem; }
+.rand-row {
+  display: flex; align-items: center; gap: .75rem;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: .55rem .85rem;
+  animation: randIn .22s ease both;
+}
+.rand-row:nth-child(1){animation-delay:.04s} .rand-row:nth-child(2){animation-delay:.09s}
+.rand-row:nth-child(3){animation-delay:.14s} .rand-row:nth-child(4){animation-delay:.19s}
+.rand-row:nth-child(5){animation-delay:.24s} .rand-row:nth-child(6){animation-delay:.29s}
+.rand-row:nth-child(7){animation-delay:.34s} .rand-row:nth-child(8){animation-delay:.39s}
+@keyframes randIn {
+  from { opacity:0; transform:translateX(-12px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+.rand-pnum {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 700; color: var(--gold); flex-shrink: 0;
+}
+.rand-sym {
+  width: 38px; height: 38px; border-radius: 6px;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
+}
+.rand-sym img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+.rand-sym-letter { color: var(--gold); font-weight: 700; font-size: .9rem; }
+.rand-fname { font-size: .9rem; font-weight: 600; }
+.rand-fexp  { font-size: .7rem; color: var(--dim); margin-top: .1rem; }
+.rand-err   { color: #e67e22; font-size: .85rem; text-align: center; padding: .5rem 0; }
+
+/* ── Header download button ─────────────────────────────────────────────── */
+.btn-header-dl {
+  padding: .42rem 1.05rem; border-radius: 6px;
+  border: none; background: var(--gold);
+  color: var(--bg); cursor: pointer; font-size: .82rem;
+  font-weight: 700; transition: all .15s; white-space: nowrap;
+  display: flex; align-items: center; gap: .35rem;
+}
+.btn-header-dl:hover:not(:disabled) { background: var(--gold2); transform: translateY(-1px); }
+.btn-header-dl:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.header-dl-status { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+<div id="vue-app">
+  <!-- ── App header ───────────────────────────────────────────────────── -->
+  <header id="app-header">
+    <!-- Brand -->
+    <div class="header-brand">
+      <div class="logo">⚔ TI4 Faction Reference</div>
+      <div class="subtitle">Twilight Imperium 4th Edition</div>
+    </div>
+
+    <!-- Site navigation -->
+    <nav class="header-nav">
+      <a href="/pdf"   class="hnav-link" target="_blank">
+        <span>Factions</span><span class="hnav-sub">PDF</span>
+      </a>
+      <div class="hnav-sep"></div>
+      <a href="/learn" class="hnav-link" target="_blank">Learn</a>
+      <a href="/rules" class="hnav-link" target="_blank">Rules</a>
+      <div class="hnav-sep"></div>
+      <a href="/pok"   class="hnav-link" target="_blank">PoK</a>
+      <a href="/te"    class="hnav-link" target="_blank">TE</a>
+      <a href="/ds"    class="hnav-link" target="_blank">DS</a>
+    </nav>
+
+    <!-- Right controls -->
+    <div class="header-controls">
+      <div class="sel-count">
+        <strong>{{ selected.length }}</strong> selected
+        <span v-if="selected.length === 0" style="color:var(--dim)"> — pick at least 1</span>
+      </div>
+      <span v-if="downloadStatus" class="header-dl-status">{{ downloadStatus }}</span>
+      <button class="btn-header-dl" @click="downloadDocx"
+              :disabled="selected.length < 1 || downloading">
+        <span v-if="downloading"><span class="spinner" style="border-top-color:var(--bg)"></span></span>
+        <span v-else>⬇ Download DOCX</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Layout ──────────────────────────────────────────────────────── -->
+  <div id="layout" v-if="!loading">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div id="sidebar-header">
+        <h2>Select Factions</h2>
+        <input class="search-bar" v-model="search" placeholder="Search factions…" type="search"/>
+        <div class="sidebar-actions">
+          <button class="btn-sm" @click="selectAll">Select All</button>
+          <button class="btn-sm danger" @click="clearAll">Clear</button>
+        </div>
+        <button class="btn-primary" style="margin-top:.5rem" @click="showRand = true">
+          🎲 Randomize Factions
+        </button>
+      </div>
+
+      <div id="faction-list">
+        <div v-for="exp in filteredExpansions" :key="exp.title" class="exp-group">
+          <div class="exp-label" :class="{ collapsed: collapsed[exp.title] }"
+               @click="toggle(exp.title)">
+            <span class="arrow">▼</span>
+            {{ exp.title }}
+            <span style="color:var(--dim);font-size:.65rem;margin-left:auto">{{ exp.factions.length }}</span>
+          </div>
+          <template v-if="!collapsed[exp.title]">
+            <div v-for="f in exp.factions" :key="f.id" class="faction-item"
+                 :class="{ selected: isSelected(f.id) }"
+                 @click="toggleFaction(f.id)">
+              <div class="thumb">
+                <img v-if="hasSymbol(f.id)" :src="symbolUrl(f.id)" :alt="f.name"
+                     style="width:100%;height:100%;object-fit:contain;padding:3px;background:var(--bg)"/>
+                <img v-else-if="hasArt(f.id)" :src="artUrl(f.id)" @error="artErrors[f.id]=true" :alt="f.name"/>
+                <template v-else>{{ f.name.charAt(0) }}</template>
+              </div>
+              <div class="fname">
+                {{ f.name }}
+              </div>
+              <div class="check">{{ isSelected(f.id) ? '✓' : '' }}</div>
+            </div>
+          </template>
+        </div>
+        <div v-if="filteredExpansions.every(e=>e.factions.length===0)"
+             style="padding:1.5rem;text-align:center;color:var(--dim);font-size:.85rem">
+          No factions match "{{ search }}"
+        </div>
+      </div>
+
+      <div id="sidebar-footer">
+        <button class="btn-primary" @click="previewSelected"
+                :disabled="selected.length < 1">
+          ↑ Load Selection
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main id="main">
+      <!-- Empty state -->
+      <div class="empty-state" v-if="selectedFactions.length === 0">
+        <div class="icon">🌌</div>
+        <template v-if="selected.length === 0">
+          <h2 style="color:var(--muted)">No factions selected</h2>
+          <p>Choose factions from the sidebar to preview their reference sheets.</p>
+        </template>
+        <template v-else>
+          <h2 style="color:var(--muted)">{{ selected.length }} faction{{ selected.length === 1 ? '' : 's' }} selected</h2>
+          <p>Click <strong style="color:var(--gold)">↑ Preview Selected</strong> in the sidebar to display faction sheets.</p>
+        </template>
+      </div>
+
+      <!-- Faction sheets -->
+      <template v-else>
+        <!-- Jump nav -->
+        <div id="jump-nav">
+          <span class="jlabel">Jump to:</span>
+          <a v-for="f in selectedFactions" :key="f.id"
+             class="jump-link" :href="'#sheet-' + f.id">{{ f.name }}</a>
+        </div>
+
+        <div v-for="f in selectedFactions" :key="f.id" :id="'sheet-' + f.id" class="faction-sheet">
+          <!-- Sheet header -->
+          <div class="sheet-header">
+            <img v-if="hasSymbol(f.id)"
+                 class="sheet-art sheet-art-symbol" :src="symbolUrl(f.id)" :alt="f.name"/>
+            <img v-else-if="hasArt(f.id) && !artErrors[f.id]"
+                 class="sheet-art" :src="artUrl(f.id)"
+                 @error="artErrors[f.id]=true" :alt="f.name"/>
+            <div v-else class="sheet-art-placeholder">{{ f.name.charAt(0) }}</div>
+            <div class="sheet-title">
+              <h1>{{ f.name }}</h1>
+              <span class="expansion-badge">{{ f.expansion }}</span>
+            </div>
+          </div>
+
+          <div class="sheet-body">
+
+            <!-- Lore -->
+            <div class="sheet-section" v-if="f.lore && f.lore.length">
+              <div class="lore-text">
+                <template v-if="!isLoreOpen(f.id)">
+                  {{ f.lore[0].slice(0, 220) }}{{ f.lore[0].length > 220 ? '…' : '' }}
+                </template>
+                <template v-else>
+                  <p v-for="(lp, pi) in f.lore" :key="pi" :style="pi > 0 ? 'margin-top:.6rem' : ''">{{ lp }}</p>
+                </template>
+              </div>
+              <div class="lore-toggle" v-if="f.lore.length > 1 || f.lore[0].length > 220"
+                   @click="toggleLore(f.id)" style="cursor:pointer">
+                {{ isLoreOpen(f.id) ? '▲ Less' : '▼ Read more' }}
+              </div>
+            </div>
+
+            <hr class="section-divider"/>
+
+            <!-- Stats: planets + commodities + starting units -->
+            <div class="sheet-section">
+              <h3>Home System</h3>
+              <table class="ti-table">
+                <thead>
+                  <tr>
+                    <th>Planet</th><th>Res</th><th>Inf</th><th>Trait</th><th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="p in f.planets" :key="p.name">
+                    <td>{{ p.name }}</td>
+                    <td><strong style="color:var(--gold)">{{ p.res }}</strong></td>
+                    <td><strong style="color:#7aaff0">{{ p.inf }}</strong></td>
+                    <td>
+                      <span v-if="p.trait" class="trait-badge" :class="'trait-'+p.trait">{{ p.trait }}</span>
+                      <span v-else style="color:var(--dim)">—</span>
+                    </td>
+                    <td style="color:var(--muted);font-size:.8rem">{{ p.type }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="stats-grid" style="margin-top:.7rem">
+                <div class="stat-box">
+                  <div class="label">Commodities</div>
+                  <div class="value"><strong>{{ f.commodities }}</strong></div>
+                </div>
+                <div class="stat-box" style="grid-column: span 2">
+                  <div class="label">Starting Units</div>
+                  <div class="value" style="font-size:.8rem">{{ (f.startingUnits || []).join(', ') || '—' }}</div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="section-divider"/>
+
+            <!-- Abilities -->
+            <div class="sheet-section" v-if="f.abilities && f.abilities.length">
+              <h3>Faction Abilities</h3>
+              <div class="ability-list">
+                <div v-for="a in f.abilities" :key="a.name" class="ability-item">
+                  <div class="aname">{{ a.name }}</div>
+                  <div class="atext">{{ a.text }}</div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="section-divider"/>
+
+            <!-- Technologies -->
+            <div class="sheet-section">
+              <h3>Technologies</h3>
+              <div style="margin-bottom:.5rem">
+                <span style="font-size:.75rem;color:var(--dim)">Starting: </span>
+                <span style="font-size:.82rem;color:var(--white)">{{ (f.startingTech || []).join(', ') || 'None' }}</span>
+              </div>
+              <div class="tech-list">
+                <div v-for="t in f.factionTech" :key="t.name" class="tech-item">
+                  <span class="tech-color" :class="techClass(t.color)">{{ techLabel(t.color) }}</span>
+                  <div class="tech-info">
+                    <div class="tname">{{ t.name }} <span class="tprereq" v-if="t.prereqs">({{ t.prereqs }})</span></div>
+                    <div class="tability">{{ t.ability }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="section-divider"/>
+
+            <!-- Units: Flagship + Mech -->
+            <div class="sheet-section">
+              <h3>Faction Units</h3>
+              <div class="unit-cards">
+                <div class="unit-card" v-if="f.flagship">
+                  <div class="uname">⛵ {{ f.flagship.name }} <span style="color:var(--dim);font-weight:400;font-size:.78rem">— Flagship</span></div>
+                  <div class="ustats">
+                    <span>Cost <strong>{{ f.flagship.cost }}</strong></span>
+                    <span>Combat <strong>{{ f.flagship.combat }}</strong></span>
+                    <span>Move <strong>{{ f.flagship.move }}</strong></span>
+                    <span>Cap <strong>{{ f.flagship.cap }}</strong></span>
+                    <span v-if="f.flagship.sustain" style="color:var(--gold)">Sustain Damage</span>
+                  </div>
+                  <div class="uability">{{ f.flagship.ability }}</div>
+                </div>
+                <div class="unit-card" v-if="f.mech">
+                  <div class="uname">🤖 {{ f.mech.name }} <span style="color:var(--dim);font-weight:400;font-size:.78rem">— Mech</span></div>
+                  <div class="ustats">
+                    <span>Cost <strong>{{ f.mech.cost }}</strong></span>
+                    <span>Combat <strong>{{ f.mech.combat }}</strong></span>
+                    <span v-if="f.mech.sustain" style="color:var(--gold)">Sustain Damage</span>
+                  </div>
+                  <div class="uability">{{ f.mech.ability }}</div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="section-divider"/>
+
+            <!-- Leaders -->
+            <div class="sheet-section" v-if="f.leaders">
+              <h3>Leaders</h3>
+              <div class="leader-cards">
+                <div class="leader-card" v-if="f.leaders.agent">
+                  <div class="lrole">Agent</div>
+                  <div class="lname">{{ f.leaders.agent.name }}</div>
+                  <div class="ltext">{{ f.leaders.agent.text }}</div>
+                </div>
+                <div class="leader-card" v-if="f.leaders.commander">
+                  <div class="lrole">Commander</div>
+                  <div class="lname">{{ f.leaders.commander.name }}</div>
+                  <div class="lunlock" v-if="f.leaders.commander.unlock">Unlock: {{ f.leaders.commander.unlock }}</div>
+                  <div class="ltext">{{ f.leaders.commander.text }}</div>
+                </div>
+                <div class="leader-card" v-if="f.leaders.hero">
+                  <div class="lrole">Hero — {{ f.leaders.hero.ability }}</div>
+                  <div class="lname">{{ f.leaders.hero.name }}</div>
+                  <div class="lunlock" v-if="f.leaders.hero.unlock">Unlock: {{ f.leaders.hero.unlock }}</div>
+                  <div class="ltext">{{ f.leaders.hero.text }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Promissory + Breakthrough -->
+            <template v-if="f.promissory || f.breakthrough">
+              <hr class="section-divider"/>
+              <div class="sheet-section">
+                <h3>Cards</h3>
+                <div style="display:flex;flex-direction:column;gap:.7rem">
+                  <div class="prom-box" v-if="f.promissory">
+                    <div class="pname">🤝 {{ f.promissory.name }}</div>
+                    <div class="ptext">{{ f.promissory.text }}</div>
+                  </div>
+                  <div class="prom-box" v-if="f.breakthrough">
+                    <div class="pname">💥 {{ f.breakthrough.name }}</div>
+                    <div class="psynergy" v-if="f.breakthrough.synergy">{{ f.breakthrough.synergy }}</div>
+                    <div class="ptext">{{ f.breakthrough.text }}</div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <a href="#main" class="back-top">↑ Back to top</a>
+          </div><!-- /sheet-body -->
+        </div><!-- /faction-sheet -->
+      </template>
+    </main>
+  </div>
+
+
+  <!-- ── Randomizer Modal ────────────────────────────────────────────── -->
+  <div class="modal-overlay" v-if="showRand" @click.self="showRand = false">
+    <div class="modal">
+      <button class="modal-close" @click="showRand = false">✕</button>
+      <div class="modal-title">🎲 Faction Randomizer</div>
+
+      <!-- Player count -->
+      <div class="rand-section-label">Number of Players</div>
+      <div class="player-selector">
+        <button v-for="n in [3,4,5,6,7,8]" :key="n"
+                class="player-btn" :class="{ active: randPlayers === n }"
+                @click="randPlayers = n; randResults = []">{{ n }}</button>
+      </div>
+
+      <!-- Presets -->
+      <div class="rand-section-label">Quick Presets</div>
+      <div class="preset-row">
+        <button class="preset-btn" @click="applyPreset('all')">All Factions</button>
+        <button class="preset-btn" @click="applyPreset('base')">Base Only</button>
+        <button class="preset-btn" @click="applyPreset('basepok')">Base + PoK</button>
+        <button class="preset-btn" @click="applyPreset('nods')">No DS</button>
+        <button class="preset-btn" @click="applyPreset('note')">No TE</button>
+        <button class="preset-btn" @click="applyPreset('notenodc')">No TE or DS</button>
+      </div>
+
+      <!-- Expansion toggles -->
+      <div class="rand-section-label">Expansion Filter</div>
+      <div class="exp-filters">
+        <div v-for="exp in randExpansionList" :key="exp.key"
+             class="exp-filter-row" @click="toggleRandExp(exp.key)">
+          <div class="exp-checkbox" :class="{ checked: randEnabledExps.has(exp.key) }"></div>
+          <span class="exp-filter-label">{{ exp.label }}</span>
+          <span class="exp-filter-count">{{ exp.count }} factions</span>
+        </div>
+      </div>
+
+      <!-- Pool info -->
+      <div class="rand-pool-info">
+        Pool: <strong>{{ randPoolSize }}</strong> effective slots available
+        <span v-if="randPoolSize < randPlayers" class="rand-pool-warn">
+          — need at least {{ randPlayers }} for this player count
+        </span>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="display:flex;gap:.5rem;margin-bottom:.25rem">
+        <button class="btn-primary" style="flex:1"
+                @click="doRandomize" :disabled="randPoolSize < randPlayers">
+          🎲 Randomize!
+        </button>
+        <button class="btn-secondary" v-if="randResults.length"
+                @click="randResults = []" style="padding:.5rem .9rem">
+          ✕ Clear
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div v-if="randError" class="rand-err">{{ randError }}</div>
+
+      <!-- Results -->
+      <div v-if="randResults.length" class="rand-results">
+        <div v-for="(f, i) in randResults" :key="f.id + i" class="rand-row">
+          <div class="rand-pnum">P{{ i + 1 }}</div>
+          <div class="rand-sym">
+            <img v-if="hasSymbol(f.id)" :src="symbolUrl(f.id)" :alt="f.name"/>
+            <span v-else class="rand-sym-letter">{{ f.name.charAt(0) }}</span>
+          </div>
+          <div>
+            <div class="rand-fname">{{ f.name }}</div>
+            <div class="rand-fexp">{{ f.expansion }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div v-else style="display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:1rem">
+    <div class="spinner" style="width:40px;height:40px;border-width:4px"></div>
+    <p style="color:var(--muted)">Loading faction data…</p>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, computed, reactive } = Vue;
+
+createApp({
+  setup() {
+    const allFactions    = ref([]);
+    const loading        = ref(true);
+    const selected       = ref([]);
+    const search         = ref('');
+    const collapsed      = reactive({});
+    const openedLore     = ref(new Set());   // Set of faction IDs with lore expanded
+    const artErrors      = reactive({});
+    const downloading    = ref(false);
+    const downloadStatus = ref('');
+    const rendered       = ref([]);  // IDs whose sheets are actually shown in main panel
+
+    // ── Randomizer ───────────────────────────────────────────────────────────
+    const showRand        = ref(false);
+    const randPlayers     = ref(6);
+    const randResults     = ref([]);
+    const randError       = ref('');
+    const randEnabledExps = ref(new Set([
+      'Base Game (TI4)', 'Prophecy of Kings', 'Codex Volume III: Decree',
+      "Thunder's Edge", 'Discordant Stars (Fan Expansion)'
+    ]));
+
+    const RAND_EXP_DEFS = [
+      { key: 'Base Game (TI4)',                  label: 'Base Game (TI4)' },
+      { key: 'Prophecy of Kings',                label: 'Prophecy of Kings' },
+      { key: 'Codex Volume III: Decree',         label: 'Codex Volume III: Decree' },
+      { key: "Thunder's Edge",                   label: "Thunder's Edge" },
+      { key: 'Discordant Stars (Fan Expansion)', label: 'Discordant Stars (Fan Expansion)' },
+    ];
+
+    const randExpansionList = computed(() =>
+      RAND_EXP_DEFS.map(e => ({
+        ...e,
+        count: allFactions.value.filter(f => f.expansion === e.key).length,
+      }))
+    );
+
+    const randPoolSize = computed(() => {
+      const pool = allFactions.value.filter(f => randEnabledExps.value.has(f.expansion));
+      const hasObs  = pool.some(f => f.id === 'obsidian');
+      const hasFirm = pool.some(f => f.id === 'firmament');
+      // Obsidian + Firmament are mutually exclusive, so together they count as 1 slot
+      return pool.length - (hasObs && hasFirm ? 1 : 0);
+    });
+
+    function toggleRandExp(key) {
+      const next = new Set(randEnabledExps.value);
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
+      randEnabledExps.value = next;
+      randResults.value = [];
+    }
+
+    function applyPreset(preset) {
+      const sets = {
+        all:      new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree',"Thunder's Edge",'Discordant Stars (Fan Expansion)']),
+        base:     new Set(['Base Game (TI4)']),
+        basepok:  new Set(['Base Game (TI4)','Prophecy of Kings']),
+        nods:     new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree',"Thunder's Edge"]),
+        note:     new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree','Discordant Stars (Fan Expansion)']),
+        notenodc: new Set(['Base Game (TI4)','Prophecy of Kings','Codex Volume III: Decree']),
+      };
+      randEnabledExps.value = sets[preset] || sets.all;
+      randResults.value = [];
+    }
+
+    function doRandomize() {
+      randError.value  = '';
+      randResults.value = [];
+      let pool = allFactions.value
+        .filter(f => randEnabledExps.value.has(f.expansion))
+        .map(f => ({ ...f, weight: (f.id === 'obsidian' || f.id === 'firmament') ? 0.5 : 1.0 }));
+
+      if (randPoolSize.value < randPlayers.value) {
+        randError.value = `Not enough factions for ${randPlayers.value} players with current filters.`;
+        return;
+      }
+
+      const picked = [];
+      for (let i = 0; i < randPlayers.value; i++) {
+        const total = pool.reduce((s, f) => s + f.weight, 0);
+        let r = Math.random() * total;
+        let chosen = pool[pool.length - 1];
+        for (const f of pool) { r -= f.weight; if (r <= 0) { chosen = f; break; } }
+        picked.push(chosen);
+        pool = pool.filter(f => f.id !== chosen.id);
+        if (chosen.id === 'obsidian')  pool = pool.filter(f => f.id !== 'firmament');
+        if (chosen.id === 'firmament') pool = pool.filter(f => f.id !== 'obsidian');
+      }
+      randResults.value = picked;
+      // Pre-load faction sheets in the background so they're ready when modal closes
+      selected.value = picked.map(f => f.id);
+      rendered.value = picked.map(f => f.id);
+    }
+
+    // Artcrop art available for these IDs
+    const ART_IDS = new Set([
+      'empyrean','firmament','hacan','mahact','nekro','norr','saar','titans','winnu','yssaril'
+    ]);
+
+    // Faction symbol icons available for these IDs
+    const SYMBOL_IDS = new Set([
+      'arborec','argent','augurs','bentor','berserkers','celdauri',
+      'cheiran','creuss','crimson','cymiae','deepwrought','dihmohn',
+      'edyn','empyrean','firmament','florzen','freesystems','ghemina',
+      'ghoti','gledge','glimmer','hacan','jolnar','keleres',
+      'kollecc','kortali','kyro','l1z1x','lanefir','lastbastion',
+      'letnev','lizho','ltokk','mahact','mentak','mirveda',
+      'monks','muaat','mykomentori','naalu','naazrokha','nekro',
+      'nivyn','nokar','nomad','norr','obsidian','olradin',
+      'ralnel','rhodun','rohdhna','saar','shipwrights','sol',
+      'titans','tnelis','vaden','vaylerian','veldyr','vuilraith',
+      'winnu','xxcha','yin','yssaril','zelian'
+    ]);
+
+    const EXPANSIONS_ORDER = [
+      'Base Game (TI4)',
+      'Prophecy of Kings',
+      'Codex Volume III: Decree',
+      "Thunder's Edge",
+      'Discordant Stars (Fan Expansion)',
+    ];
+
+    fetch('/faction-data.json')
+      .then(r => r.json())
+      .then(data => { allFactions.value = data; loading.value = false; })
+      .catch(() => { loading.value = false; });
+
+    const filteredExpansions = computed(() => {
+      const q = search.value.toLowerCase();
+      return EXPANSIONS_ORDER.map(title => ({
+        title,
+        factions: allFactions.value
+          .filter(f => f.expansion === title)
+          .filter(f => !q || f.name.toLowerCase().includes(q))
+      })).filter(e => e.factions.length > 0);
+    });
+
+    const selectedFactions = computed(() =>
+      allFactions.value.filter(f => rendered.value.includes(f.id))
+    );
+
+    function isSelected(id) { return selected.value.includes(id); }
+
+    function toggleFaction(id) {
+      if (isSelected(id)) {
+        selected.value = selected.value.filter(s => s !== id);
+      } else {
+        selected.value = [...selected.value, id];
+      }
+    }
+
+    function isLoreOpen(id) { return openedLore.value.has(id); }
+    function toggleLore(id) {
+      const next = new Set(openedLore.value);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      openedLore.value = next;
+    }
+
+    function toggle(title) {
+      collapsed[title] = !collapsed[title];
+    }
+
+    function selectAll() {
+      const toAdd = allFactions.value
+        .filter(f => !isSelected(f.id))
+        .map(f => f.id);
+      selected.value = [...selected.value, ...toAdd];
+    }
+
+    function clearAll() { selected.value = []; rendered.value = []; }
+
+    function previewSelected() {
+      rendered.value = [...selected.value];
+      scrollToTop();
+    }
+
+    function hasArt(id)    { return ART_IDS.has(id) && !artErrors[id]; }
+    function hasSymbol(id) { return SYMBOL_IDS.has(id); }
+    function artUrl(id)    { return `/art/artcrop_${id}.jpg`; }
+    function symbolUrl(id) { return `/art/symbol_${id}.webp`; }
+
+    function techClass(color) {
+      if (!color) return 'tech-Unknown';
+      if (color.includes('Biotic') || color.includes('Green')) return 'tech-Biotic';
+      if (color.includes('Propulsion') || color.includes('Blue')) return 'tech-Propulsion';
+      if (color.includes('Cybernetic') || color.includes('Yellow')) return 'tech-Cybernetic';
+      if (color.includes('Warfare') || color.includes('Red')) return 'tech-Warfare';
+      return 'tech-Unknown';
+    }
+    function techLabel(color) {
+      if (!color) return '?';
+      if (color.includes('Biotic') || color.includes('Green')) return 'BIO';
+      if (color.includes('Propulsion') || color.includes('Blue')) return 'PROP';
+      if (color.includes('Cybernetic') || color.includes('Yellow')) return 'CYB';
+      if (color.includes('Warfare') || color.includes('Red')) return 'WAR';
+      return '?';
+    }
+
+    function scrollToTop() {
+      document.getElementById('main').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function downloadDocx() {
+      if (selected.value.length < 1) return;
+      downloading.value = true;
+      downloadStatus.value = 'Building document\u2026';
+      try {
+        const factions = allFactions.value.filter(f => selected.value.includes(f.id));
+
+        // XML helpers
+        function esc(s) {
+          if (s == null) return '';
+          return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                          .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        function wp(text, styleId) {
+          const sp = styleId ? `<w:pPr><w:pStyle w:val="${styleId}"/></w:pPr>` : '';
+          return `<w:p>${sp}<w:r><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p>`;
+        }
+        function wbp(text) {
+          return `<w:p><w:r><w:rPr><w:b/></w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p>`;
+        }
+        function h1(t) { return wp(t, 'TIH1'); }
+        function h2(t) { return wp(t, 'TIH2'); }
+        function pgBreak() { return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'; }
+        function tRow(cells, widths, bold) {
+          return '<w:tr>' + cells.map((c, i) => {
+            const rpr  = bold ? '<w:rPr><w:b/></w:rPr>' : '';
+            const tcPr = widths
+              ? `<w:tcPr><w:tcW w:w="${widths[i]}" w:type="dxa"/></w:tcPr>`
+              : '';
+            return `<w:tc>${tcPr}<w:p><w:r>${rpr}<w:t xml:space="preserve">${esc(c)}</w:t></w:r></w:p></w:tc>`;
+          }).join('') + '</w:tr>';
+        }
+
+        function buildFactionXml(f) {
+          const out = [];
+          out.push(h1(f.name));
+          out.push(wp(f.expansion, 'TISub'));
+
+          if (f.lore && f.lore.length) {
+            out.push(h2('Lore'));
+            f.lore.forEach(l => out.push(wp(l)));
+          }
+
+          if (f.planets && f.planets.length) {
+            out.push(h2('Home System'));
+            // Column widths in twips (1/1440 inch). Total = 9360 = 6.5" usable page width.
+            const colW    = [3200, 900, 900, 2460, 1900];
+            const tblGrid = '<w:tblGrid>' + colW.map(w => `<w:gridCol w:w="${w}"/>`).join('') + '</w:tblGrid>';
+            const borders = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:left w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:right w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="888888"/></w:tblBorders>';
+            const cellMar = '<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tblCellMar>';
+            out.push(`<w:tbl><w:tblPr><w:tblW w:w="9360" w:type="dxa"/>${borders}${cellMar}</w:tblPr>${tblGrid}`);
+            out.push(tRow(['Planet','Res','Inf','Trait','Type'], colW, true));
+            f.planets.forEach(pl => out.push(tRow([
+              pl.name, String(pl.res ?? ''), String(pl.inf ?? ''),
+              pl.trait || '\u2014', pl.type || ''
+            ], colW)));
+            out.push('</w:tbl>');
+          }
+
+          const statLines = [];
+          if (f.commodities != null) statLines.push(`Commodities: ${f.commodities}`);
+          if (f.startingUnits && f.startingUnits.length) statLines.push(`Starting Units: ${f.startingUnits.join(', ')}`);
+          if (f.startingTech  && f.startingTech.length)  statLines.push(`Starting Tech: ${f.startingTech.join(', ')}`);
+          if (statLines.length) {
+            out.push(h2('Starting Setup'));
+            statLines.forEach(l => out.push(wp(l)));
+          }
+
+          if (f.abilities && f.abilities.length) {
+            out.push(h2('Faction Abilities'));
+            f.abilities.forEach(a => { out.push(wbp(a.name)); out.push(wp(a.text)); });
+          }
+
+          if (f.factionTech && f.factionTech.length) {
+            out.push(h2('Faction Technologies'));
+            f.factionTech.forEach(t => {
+              const prereq = t.prereqs ? ` (${t.prereqs})` : '';
+              out.push(wbp(`${t.name}${prereq}  [${t.color || '?'}]`));
+              if (t.ability) out.push(wp(t.ability));
+            });
+          }
+
+          if (f.flagship || f.mech) {
+            out.push(h2('Faction Units'));
+            if (f.flagship) {
+              const s = [
+                f.flagship.cost  != null ? `Cost: ${f.flagship.cost}`   : '',
+                f.flagship.combat         ? `Combat: ${f.flagship.combat}` : '',
+                f.flagship.move  != null ? `Move: ${f.flagship.move}`   : '',
+                f.flagship.cap   != null ? `Cap: ${f.flagship.cap}`     : '',
+                f.flagship.sustain        ? 'Sustain Damage'             : '',
+              ].filter(Boolean).join('  |  ');
+              out.push(wbp(`${f.flagship.name}  \u2014  Flagship`));
+              if (s) out.push(wp(s));
+              if (f.flagship.ability) out.push(wp(f.flagship.ability));
+            }
+            if (f.mech) {
+              const s = [
+                f.mech.cost   != null ? `Cost: ${f.mech.cost}`     : '',
+                f.mech.combat          ? `Combat: ${f.mech.combat}` : '',
+                f.mech.sustain         ? 'Sustain Damage'           : '',
+              ].filter(Boolean).join('  |  ');
+              out.push(wbp(`${f.mech.name}  \u2014  Mech`));
+              if (s) out.push(wp(s));
+              if (f.mech.ability) out.push(wp(f.mech.ability));
+            }
+          }
+
+          if (f.leaders) {
+            out.push(h2('Leaders'));
+            ['agent','commander','hero'].forEach(role => {
+              const l = f.leaders[role];
+              if (!l) return;
+              const heroType = (role === 'hero' && l.ability) ? `  \u2014  ${l.ability}` : '';
+              out.push(wbp(`${l.name}  (${role.charAt(0).toUpperCase() + role.slice(1)}${heroType})`));
+              if (l.unlock) out.push(wp(`Unlock: ${l.unlock}`));
+              if (l.text)   out.push(wp(l.text));
+            });
+          }
+
+          if (f.promissory) {
+            out.push(h2('Promissory Note'));
+            out.push(wbp(f.promissory.name));
+            out.push(wp(f.promissory.text));
+          }
+          if (f.breakthrough) {
+            out.push(h2('Flagship Breakthrough'));
+            out.push(wbp(f.breakthrough.name));
+            if (f.breakthrough.synergy) out.push(wp(f.breakthrough.synergy));
+            out.push(wp(f.breakthrough.text));
+          }
+
+          return out.join('');
+        }
+
+        const bodyContent = factions.map((f, i) =>
+          buildFactionXml(f) + (i < factions.length - 1 ? pgBreak() : '')
+        ).join('');
+
+        const WNS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+        const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${WNS}><w:body>${bodyContent}</w:body></w:document>`;
+
+        const ctXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
+
+        const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+
+        const docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+
+        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${WNS}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/><w:rPr><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TIH1"><w:name w:val="TI Heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:before="280" w:after="100"/></w:pPr><w:rPr><w:b/><w:sz w:val="44"/><w:szCs w:val="44"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TIH2"><w:name w:val="TI Heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:before="200" w:after="60"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TISub"><w:name w:val="TI Subtitle"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="140"/></w:pPr><w:rPr><w:i/><w:sz w:val="20"/><w:szCs w:val="20"/><w:color w:val="888888"/></w:rPr></w:style></w:styles>`;
+
+        const zip = new JSZip();
+        zip.file('[Content_Types].xml', ctXml);
+        zip.file('_rels/.rels',          relsXml);
+        zip.file('word/document.xml',    docXml);
+        zip.file('word/_rels/document.xml.rels', docRelsXml);
+        zip.file('word/styles.xml',      stylesXml);
+
+        const blob = await zip.generateAsync({
+          type: 'blob',
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'TI4_Factions.docx';
+        a.click();
+        URL.revokeObjectURL(url);
+        downloadStatus.value = '\u2713 Download complete!';
+        setTimeout(() => { downloadStatus.value = ''; }, 3000);
+      } catch (e) {
+        downloadStatus.value = '\u2717 Error: ' + (e.message || 'Unknown error');
+      } finally {
+        downloading.value = false;
+      }
+    }
+
+    return {
+      allFactions, loading, selected, rendered, search, collapsed,
+      openedLore, artErrors, downloading, downloadStatus,
+      filteredExpansions, selectedFactions,
+      isSelected, toggleFaction, toggle,
+      isLoreOpen, toggleLore,
+      selectAll, clearAll, previewSelected,
+      hasArt, hasSymbol, artUrl, symbolUrl,
+      showRand, randPlayers, randResults, randError,
+      randEnabledExps, randExpansionList, randPoolSize,
+      toggleRandExp, applyPreset, doRandomize,
+      techClass, techLabel, scrollToTop, downloadDocx,
+    };
+  }
+}).mount('#vue-app');
+</script>
+</body>
+</html>

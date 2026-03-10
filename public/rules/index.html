@@ -1,15 +1,39 @@
 <!DOCTYPE html>
-<html><head>
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="1;url=https://drive.google.com/file/d/16_7_BntEQkw3a2zbdDt2R0dgNSo6uJx7/preview">
-<title>TI4 Living Rules Reference</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TI4 Living Rules Reference — freier.fun</title>
 <style>
-  body{background:#1E1E24;color:#EFEFEF;font-family:Arial,sans-serif;
-    display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:1rem;}
-  a{color:#C9A845;font-weight:bold;}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg: #1E1E24; --bg2: #262630; --gold: #C9A845; --white: #EFEFEF; --dim: #888899; --border: #3C3C50; }
+html, body { height: 100%; background: var(--bg); color: var(--white); font-family: Arial, sans-serif; }
+body { display: flex; flex-direction: column; }
+#topbar { background: var(--bg2); border-bottom: 2px solid var(--gold); padding: .6rem 1.4rem; display: flex; align-items: center; gap: 1.2rem; flex-shrink: 0; }
+.back-link { color: var(--gold); text-decoration: none; font-size: .82rem; font-weight: 700; white-space: nowrap; }
+.back-link:hover { text-decoration: underline; }
+.page-title { font-size: .95rem; font-weight: 700; color: var(--white); white-space: nowrap; }
+.nav-links { display: flex; gap: .3rem; margin-left: auto; }
+.nav-pill { padding: .22rem .65rem; font-size: .75rem; font-weight: 600; color: var(--dim); text-decoration: none; border-radius: 4px; border: 1px solid var(--border); transition: all .15s; white-space: nowrap; }
+.nav-pill:hover { color: var(--gold); border-color: var(--gold); }
+#embed-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 1rem; }
+#embed-wrap iframe { flex: 1; width: 100%; border: none; min-height: 0; }
 </style>
-<script>setTimeout(function(){window.location='https://drive.google.com/file/d/16_7_BntEQkw3a2zbdDt2R0dgNSo6uJx7/preview'},500)</script>
-</head><body>
-<p>Loading Rules Reference...</p>
-<a href="https://drive.google.com/file/d/16_7_BntEQkw3a2zbdDt2R0dgNSo6uJx7/preview">Click here if not redirected</a>
-</body></html>
+</head>
+<body>
+<div id="topbar">
+  <a class="back-link" href="/">← Faction Reference</a>
+  <span class="page-title">Living Rules Reference</span>
+  <div class="nav-links">
+    <a class="nav-pill" href="/learn">Learn</a>
+    <a class="nav-pill" href="/pok">PoK</a>
+    <a class="nav-pill" href="/te">TE</a>
+    <a class="nav-pill" href="/ds">DS</a>
+    <a class="nav-pill" href="/pdf">Factions PDF</a>
+  </div>
+</div>
+<div id="embed-wrap">
+  <iframe class="scribd_iframe_embed" title="ti4_living_rules_reference_v1_3_web" src="https://www.scribd.com/embeds/474033387/content?start_page=1&view_mode=scroll&access_key=key-NJqXoCAoQvUPJm6pFXpZ" tabindex="0" data-auto-height="true" data-aspect-ratio="0.7729220222793488" scrolling="no" width="100%" height="100%" frameborder="0"></iframe>
+</div>
+</body>
+</html>

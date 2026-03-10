@@ -357,6 +357,22 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── Jump nav ────────────────────────────────────────────────────────────── */
+
+/* Mobile nav row */
+@media (max-width: 900px) {
+  #app-header { flex-wrap: wrap !important; }
+  .header-brand    { order: 1 !important; }
+  .header-controls { order: 2 !important; margin-left: auto !important; }
+  .header-nav {
+    order: 3 !important; width: 100% !important; flex: none !important;
+    flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; justify-content: flex-start !important;
+    scrollbar-width: none;
+  }
+  .header-nav::-webkit-scrollbar { display: none; }
+  .header-nav .hnav-sep { display: none !important; }
+}
+
 #jump-nav {
   background: var(--bg3); border-bottom: 1px solid var(--border);
   padding: .55rem 1.5rem; display: flex; align-items: center;

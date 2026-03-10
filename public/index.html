@@ -1064,10 +1064,13 @@ createApp({
         function h1(t) { return wp(t, 'TIH1'); }
         function h2(t) { return wp(t, 'TIH2'); }
         function pgBreak() { return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'; }
-        function tRow(cells, bold) {
-          return '<w:tr>' + cells.map(c => {
-            const rpr = bold ? '<w:rPr><w:b/></w:rPr>' : '';
-            return `<w:tc><w:p><w:r>${rpr}<w:t xml:space="preserve">${esc(c)}</w:t></w:r></w:p></w:tc>`;
+        function tRow(cells, widths, bold) {
+          return '<w:tr>' + cells.map((c, i) => {
+            const rpr  = bold ? '<w:rPr><w:b/></w:rPr>' : '';
+            const tcPr = widths
+              ? `<w:tcPr><w:tcW w:w="${widths[i]}" w:type="dxa"/></w:tcPr>`
+              : '';
+            return `<w:tc>${tcPr}<w:p><w:r>${rpr}<w:t xml:space="preserve">${esc(c)}</w:t></w:r></w:p></w:tc>`;
           }).join('') + '</w:tr>';
         }
 
@@ -1083,13 +1086,17 @@ createApp({
 
           if (f.planets && f.planets.length) {
             out.push(h2('Home System'));
-            const borders = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:left w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:right w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="666666"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="666666"/></w:tblBorders>';
-            out.push(`<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}</w:tblPr>`);
-            out.push(tRow(['Planet','Res','Inf','Trait','Type'], true));
+            // Column widths in twips (1/1440 inch). Total = 9360 = 6.5" usable page width.
+            const colW    = [3200, 900, 900, 2460, 1900];
+            const tblGrid = '<w:tblGrid>' + colW.map(w => `<w:gridCol w:w="${w}"/>`).join('') + '</w:tblGrid>';
+            const borders = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:left w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:right w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="888888"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="888888"/></w:tblBorders>';
+            const cellMar = '<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tblCellMar>';
+            out.push(`<w:tbl><w:tblPr><w:tblW w:w="9360" w:type="dxa"/>${borders}${cellMar}</w:tblPr>${tblGrid}`);
+            out.push(tRow(['Planet','Res','Inf','Trait','Type'], colW, true));
             f.planets.forEach(pl => out.push(tRow([
               pl.name, String(pl.res ?? ''), String(pl.inf ?? ''),
               pl.trait || '\u2014', pl.type || ''
-            ])));
+            ], colW)));
             out.push('</w:tbl>');
           }
 
